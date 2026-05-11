@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Focus — The Context Infrastructure for Industrial Operations</title>
+  <meta name="description" content="Focus is the operational logic layer between ERP systems and AI applications. The missing infrastructure for industrial operations.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            fo: {
+              orange: '#F05A00',
+              'orange-dim': '#C44A00',
+              'orange-pale': '#FFF3EC',
+              dark: '#0C0C0C',
+              ink: '#1E1E1E',
+              muted: '#6A6A6A',
+              faint: '#9A9A9A',
+              rule: '#E6E6E3',
+              bg: '#F9F9F7',
+            }
+          },
+          fontFamily: {
+            display: ['"Barlow Condensed"', 'sans-serif'],
+            body: ['"DM Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: "DM Sans", sans-serif; color: #1E1E1E; background: #fff; -webkit-font-smoothing: antialiased; }
+
+    /* --- Reveal on scroll --- */
+    .reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.65s cubic-bezier(.22,.68,0,1.2), transform 0.65s cubic-bezier(.22,.68,0,1.2); }
+    .reveal.visible { opacity: 1; transform: none; }
+    .reveal-delay-1 { transition-delay: 0.08s; }
+    .reveal-delay-2 { transition-delay: 0.16s; }
+    .reveal-delay-3 { transition-delay: 0.24s; }
+    .reveal-delay-4 { transition-delay: 0.32s; }
+
+    /* --- Nav --- */
+    #nav { transition: box-shadow 0.2s; }
+    #nav.scrolled { box-shadow: 0 1px 0 #E6E6E3; }
+
+    /* --- Hero background --- */
+    .hero-bg {
+      background:
+        radial-gradient(ellipse 60% 80% at 100% 40%, rgba(240,90,0,0.07) 0%, transparent 70%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Ccircle cx='1' cy='1' r='0.8' fill='%23E6E6E3'/%3E%3C/svg%3E");
+    }
+
+    /* --- Buttons --- */
+    .btn-primary {
+      background: #F05A00;
+      color: #fff;
+      font-family: "DM Sans", sans-serif;
+      font-weight: 600;
+      transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-primary:hover {
+      background: #C44A00;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(240,90,0,0.28);
+    }
+    .btn-ghost {
+      color: #1E1E1E;
+      border-bottom: 1.5px solid #C8C8C8;
+      transition: border-color 0.15s, color 0.15s;
+      font-family: "DM Sans", sans-serif;
+      font-weight: 500;
+      padding-bottom: 1px;
+    }
+    .btn-ghost:hover { color: #F05A00; border-color: #F05A00; }
+
+    /* --- Tag pill --- */
+    .label-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: #F05A00;
+    }
+    .label-tag::before { content: ''; display: block; width: 28px; height: 2px; background: #F05A00; }
+
+    /* --- Stack diagram --- */
+    .stack-layer { border-radius: 10px; transition: box-shadow 0.2s; }
+    .stack-gap { border-left: 2px dashed #E6E6E3; border-right: 2px dashed #E6E6E3; margin: 0 24px; height: 10px; }
+    .stack-focus { border: 2px solid #F05A00; background: rgba(240,90,0,0.03); }
+
+    /* --- Step connector line --- */
+    .step-line::after {
+      content: '';
+      position: absolute; top: 20px; left: calc(100% - 0px); right: -100%;
+      height: 1px;
+      background: linear-gradient(to right, #E6E6E3, rgba(240,90,0,0.2));
+    }
+
+    /* --- Quote pull --- */
+    .quote-card { border-top: 2px solid #2A2A2A; }
+
+    /* --- Form inputs --- */
+    .form-input {
+      width: 100%;
+      border: 1.5px solid #E6E6E3;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: "DM Sans", sans-serif;
+      font-size: 14px;
+      color: #1E1E1E;
+      background: #fff;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      appearance: none;
+    }
+    .form-input:focus { outline: none; border-color: #F05A00; box-shadow: 0 0 0 3px rgba(240,90,0,0.1); }
+    .form-input::placeholder { color: #C0C0C0; }
+    .form-label {
+      display: block;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #6A6A6A;
+      margin-bottom: 6px;
+    }
+
+    /* --- Logo wall --- */
+    .logo-name {
+      font-family: "Barlow Condensed", sans-serif;
+      font-size: 15px; font-weight: 600;
+      letter-spacing: 0.04em;
+      color: #C8C8C8;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .logo-name:hover { color: #6A6A6A; }
+
+    /* --- Pillar card hover --- */
+    .pillar-card { transition: box-shadow 0.2s, transform 0.2s; }
+    .pillar-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.06); transform: translateY(-2px); }
+
+    /* --- Stat number --- */
+    .stat-num {
+      font-family: "Barlow Condensed", sans-serif;
+      font-weight: 800;
+      font-size: 3.5rem;
+      line-height: 1;
+      color: #F05A00;
+    }
+
+    /* --- Select arrow --- */
+    .select-wrap { position: relative; }
+    .select-wrap::after {
+      content: '';
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      width: 0; height: 0;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 5px solid #9A9A9A;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ NAV ═══════════════════════════════ -->
+<nav id="nav" class="fixed top-0 left-0 right-0 z-50 bg-white/96 backdrop-blur-sm">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 h-[60px] flex items-center justify-between">
+    <a href="#" class="flex items-center gap-2.5 no-underline">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+        <circle cx="13" cy="13" r="11.5" stroke="#F05A00" stroke-width="2.5"/>
+        <circle cx="13" cy="13" r="5.5" fill="#F05A00"/>
+        <circle cx="13" cy="13" r="2.2" fill="#0C0C0C"/>
+      </svg>
+      <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.25rem;letter-spacing:0.02em;color:#0C0C0C;">FOCUS<span style="color:#F05A00;">.</span></span>
+    </a>
+    <div class="flex items-center gap-8">
+      <a href="#how-it-works" class="hidden md:block text-sm font-medium text-fo-muted hover:text-fo-ink transition-colors font-body">How it works</a>
+      <a href="#book" class="btn-primary px-5 py-2.5 rounded-lg text-sm">Book a pilot call</a>
+    </div>
+  </div>
+</nav>
+
+
+<!-- ═══════════════════════════════ HERO ═══════════════════════════════ -->
+<section class="hero-bg pt-28 pb-24 lg:pt-36 lg:pb-32 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="grid lg:grid-cols-[1fr_480px] gap-16 items-center">
+
+      <!-- Copy -->
+      <div class="max-w-[600px]">
+        <div class="label-tag mb-7 reveal">Context Infrastructure for Industrial Operations</div>
+
+        <h1 class="reveal reveal-delay-1 font-display font-800 text-fo-dark leading-[0.96] mb-7"
+            style="font-size:clamp(2.8rem,5.5vw,5rem);letter-spacing:-0.01em;">
+          The operational logic layer<br>
+          <span style="color:#F05A00;">industrial AI</span><br>
+          has been missing.
+        </h1>
+
+        <p class="reveal reveal-delay-2 font-body text-[1.0625rem] text-fo-muted leading-relaxed mb-10 max-w-[480px]">
+          AI fails in operations for the same reason operations have bled cash for decades —
+          the rules, constraints, and context that actually run the business live nowhere.
+          Focus is the missing layer between your ERP and your AI.
+        </p>
+
+        <div class="reveal reveal-delay-3 flex flex-wrap items-center gap-5 mb-12">
+          <a href="#book" class="btn-primary px-8 py-3.5 rounded-lg text-[0.9375rem]">Book a pilot call →</a>
+          <a href="#how-it-works" class="btn-ghost text-[0.9375rem]">See how it works</a>
+        </div>
+
+        <div class="reveal reveal-delay-4 flex items-center gap-3 text-xs text-fo-faint font-mono">
+          <span>70+ conversations with ops leaders</span>
+          <span style="color:#DDD;">·</span>
+          <span>First design partner: F&amp;B manufacturer, France</span>
+        </div>
+      </div>
+
+      <!-- Hero diagram: the three-layer stack -->
+      <div class="hidden lg:block reveal reveal-delay-2">
+        <div style="font-family:'DM Sans',sans-serif;">
+
+          <!-- Layer: AI Apps (top, faded) -->
+          <div class="stack-layer border border-fo-rule bg-fo-bg px-6 py-5 mb-0">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#B0B0B0;margin-bottom:6px;">AI Applications &amp; Agents</div>
+            <div style="font-size:12px;color:#C8C8C8;">UiPath &nbsp;·&nbsp; GPT &nbsp;·&nbsp; Claude &nbsp;·&nbsp; Microsoft Copilot</div>
+            <div style="margin-top:10px;font-size:11px;color:#D0D0D0;font-style:italic;">
+              ↓ &nbsp;Needs rules &amp; context to operate
+            </div>
+          </div>
+
+          <!-- Gap (dashed) -->
+          <div class="stack-gap"></div>
+
+          <!-- Layer: FOCUS (highlighted) -->
+          <div class="stack-focus stack-layer px-6 py-6 relative">
+            <div style="position:absolute;top:-11px;left:20px;">
+              <span style="background:#F05A00;color:#fff;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;padding:3px 10px;border-radius:20px;">Focus fills this</span>
+            </div>
+
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#F05A00;margin-bottom:10px;">Operational Logic</div>
+
+            <div style="font-size:13px;font-weight:600;color:#1E1E1E;margin-bottom:4px;">Rules · Constraints · Policies · Decision Logic</div>
+            <div style="font-size:12px;color:#9A9A9A;margin-bottom:14px;">No system manages this layer. It lives in people's heads.</div>
+
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              <span style="font-size:11px;background:rgba(240,90,0,0.1);color:#F05A00;padding:3px 10px;border-radius:12px;font-family:'JetBrains Mono',monospace;">Versioned</span>
+              <span style="font-size:11px;background:rgba(240,90,0,0.1);color:#F05A00;padding:3px 10px;border-radius:12px;font-family:'JetBrains Mono',monospace;">Governed</span>
+              <span style="font-size:11px;background:rgba(240,90,0,0.1);color:#F05A00;padding:3px 10px;border-radius:12px;font-family:'JetBrains Mono',monospace;">API-exposed</span>
+              <span style="font-size:11px;background:rgba(240,90,0,0.1);color:#F05A00;padding:3px 10px;border-radius:12px;font-family:'JetBrains Mono',monospace;">Auditable</span>
+            </div>
+          </div>
+
+          <!-- Gap (dashed) -->
+          <div class="stack-gap"></div>
+
+          <!-- Layer: Data + ERP (bottom, faded) -->
+          <div class="stack-layer border border-fo-rule bg-fo-bg px-6 py-5">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#B0B0B0;margin-bottom:6px;">Data &amp; BI · Operational Systems (ERP)</div>
+            <div style="font-size:12px;color:#C8C8C8;">SAP &nbsp;·&nbsp; NetSuite &nbsp;·&nbsp; Kinaxis &nbsp;·&nbsp; Snowflake &nbsp;·&nbsp; Oracle</div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ PROBLEM (dark) ═══════════════════════════════ -->
+<section class="bg-[#0C0C0C] py-24">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+
+    <div class="mb-16 reveal">
+      <div class="label-tag mb-5" style="color:#F05A00;">If you've said any of this out loud this month, keep reading.</div>
+      <h2 class="font-display font-700 text-white leading-tight"
+          style="font-size:clamp(1.9rem,3.2vw,2.8rem);max-width:640px;">
+        The plan breaks daily. The system doesn't reflect reality. And AI makes it worse.
+      </h2>
+    </div>
+
+    <!-- Quotes -->
+    <div class="grid md:grid-cols-3 gap-8 mb-20">
+      <div class="quote-card pt-8 reveal">
+        <blockquote class="font-body text-[1.0625rem] text-white leading-relaxed italic mb-6">
+          "The plan breaks daily, sometimes hourly. We constantly override the system because reality is different."
+        </blockquote>
+        <cite class="not-italic">
+          <div class="font-semibold text-fo-orange text-sm font-body">VP Operations</div>
+          <div class="text-[#555] text-sm font-body">Electronics manufacturer</div>
+        </cite>
+      </div>
+      <div class="quote-card pt-8 reveal reveal-delay-1">
+        <blockquote class="font-body text-[1.0625rem] text-white leading-relaxed italic mb-6">
+          "Seeing the impact of a single extra order takes weeks. The system doesn't reflect the real constraints."
+        </blockquote>
+        <cite class="not-italic">
+          <div class="font-semibold text-fo-orange text-sm font-body">Supply Chain Manager</div>
+          <div class="text-[#555] text-sm font-body">Medical device manufacturer</div>
+        </cite>
+      </div>
+      <div class="quote-card pt-8 reveal reveal-delay-2">
+        <blockquote class="font-body text-[1.0625rem] text-white leading-relaxed italic mb-6">
+          "No system we used truly captures the constraints we operate under."
+        </blockquote>
+        <cite class="not-italic">
+          <div class="font-semibold text-fo-orange text-sm font-body">VP Operations</div>
+          <div class="text-[#555] text-sm font-body">F&amp;B manufacturer</div>
+        </cite>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="border-t border-[#1E1E1E] pt-16 grid grid-cols-2 lg:grid-cols-4 gap-10">
+      <div class="reveal">
+        <div class="stat-num mb-2">$1.7T</div>
+        <div class="text-[#555] text-sm font-body leading-snug">Lost annually to inventory distortion</div>
+      </div>
+      <div class="reveal reveal-delay-1">
+        <div class="stat-num mb-2">56%</div>
+        <div class="text-[#555] text-sm font-body leading-snug">Cite data contextualization as the #1 AI blocker</div>
+      </div>
+      <div class="reveal reveal-delay-2">
+        <div class="stat-num mb-2">66%</div>
+        <div class="text-[#555] text-sm font-body leading-snug">Can't scale AI pilots into production</div>
+      </div>
+      <div class="reveal reveal-delay-3">
+        <div class="stat-num mb-2">23%</div>
+        <div class="text-[#555] text-sm font-body leading-snug">Profitability drag from poor supply chain management</div>
+      </div>
+    </div>
+    <p class="text-[#333] text-xs font-mono mt-6">Sources: IHL Group 2024 · PwC Global Working Capital Study · Accenture 2024 · Manufacturing Leadership Council 2025</p>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ STACK BROKEN ═══════════════════════════════ -->
+<section class="py-24 bg-white" id="stack">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+
+    <div class="max-w-[600px] mb-16">
+      <div class="label-tag mb-5 reveal">Why it matters</div>
+      <h2 class="font-display font-700 text-fo-dark leading-tight mb-5 reveal reveal-delay-1"
+          style="font-size:clamp(1.9rem,3.2vw,2.8rem);">
+        The operational logic has no home in the modern industrial stack.
+      </h2>
+      <p class="font-body text-fo-muted text-[1.0625rem] leading-relaxed reveal reveal-delay-2">
+        Your AI tools sit on top. Your ERP sits at the bottom. In between — the rules, constraints, and policies that actually govern decisions — there's nothing. That gap is why AI pilots fail to scale.
+      </p>
+    </div>
+
+    <!-- Stack layers (full-width) -->
+    <div class="max-w-3xl reveal">
+
+      <!-- AI layer -->
+      <div class="border border-fo-rule rounded-xl px-7 py-5 bg-fo-bg mb-0">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <div class="font-mono text-[9px] tracking-[0.12em] uppercase text-[#AAAAAA] mb-1.5">AI Applications &amp; Agents</div>
+            <div class="text-sm text-[#C0C0C0] font-body">UiPath &nbsp;·&nbsp; GPT &nbsp;·&nbsp; Claude &nbsp;·&nbsp; Glean &nbsp;·&nbsp; Copilot &nbsp;·&nbsp; Emerix</div>
+          </div>
+          <div class="font-mono text-[10px] text-[#CCCCCC] hidden md:block">↓ needs context</div>
+        </div>
+      </div>
+
+      <!-- Dashed gap -->
+      <div style="border-left:1.5px dashed #E6E6E3;border-right:1.5px dashed #E6E6E3;margin:0 28px;height:12px;"></div>
+
+      <!-- FOCUS layer -->
+      <div class="border-2 border-fo-orange rounded-xl px-7 py-7 relative mb-0" style="background:rgba(240,90,0,0.025);">
+        <div style="position:absolute;top:-12px;left:24px;">
+          <span class="font-mono text-[9px] tracking-[0.1em] uppercase font-medium"
+                style="background:#F05A00;color:#fff;padding:3px 12px;border-radius:20px;">Focus</span>
+        </div>
+        <div class="font-mono text-[9px] tracking-[0.12em] uppercase text-fo-orange mb-3">Operational Logic &nbsp;—&nbsp; previously empty</div>
+        <div class="font-body text-sm font-semibold text-fo-ink mb-2">Rules · Constraints · Policies · Decision Logic · Tribal Knowledge</div>
+        <div class="font-body text-sm text-fo-muted mb-5">Owned by the company. Versioned with full audit trail. Exposed as an API to every system that needs it.</div>
+        <div class="flex items-center gap-3 flex-wrap">
+          <div class="flex items-center gap-2">
+            <div class="w-1.5 h-1.5 rounded-full bg-fo-orange"></div>
+            <span class="font-mono text-[10px] text-fo-orange">Structured records (deterministic)</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-1.5 h-1.5 rounded-full bg-fo-orange opacity-60"></div>
+            <span class="font-mono text-[10px] text-fo-orange opacity-80">Markdown docs (judgment)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashed gap -->
+      <div style="border-left:1.5px dashed #E6E6E3;border-right:1.5px dashed #E6E6E3;margin:0 28px;height:12px;"></div>
+
+      <!-- Data & ERP layer -->
+      <div class="border border-fo-rule rounded-xl px-7 py-5 bg-fo-bg mb-3">
+        <div class="font-mono text-[9px] tracking-[0.12em] uppercase text-[#AAAAAA] mb-1.5">Data &amp; BI Analytics</div>
+        <div class="text-sm text-[#C0C0C0] font-body">Snowflake &nbsp;·&nbsp; Databricks &nbsp;·&nbsp; Tableau &nbsp;·&nbsp; Power BI &nbsp;·&nbsp; Palantir</div>
+      </div>
+      <div class="border border-fo-rule rounded-xl px-7 py-5 bg-fo-bg">
+        <div class="font-mono text-[9px] tracking-[0.12em] uppercase text-[#AAAAAA] mb-1.5">Operational Systems (ERP / SCM)</div>
+        <div class="text-sm text-[#C0C0C0] font-body">SAP &nbsp;·&nbsp; NetSuite &nbsp;·&nbsp; Infor &nbsp;·&nbsp; Kinaxis &nbsp;·&nbsp; Oracle</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SOLUTION ═══════════════════════════════ -->
+<section class="py-24 bg-fo-bg" id="solution">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+
+    <div class="max-w-[600px] mb-16">
+      <div class="label-tag mb-5 reveal">The Solution</div>
+      <h2 class="font-display font-700 text-fo-dark leading-tight reveal reveal-delay-1"
+          style="font-size:clamp(1.9rem,3.2vw,2.8rem);">
+        We build the logic repository that powers AI in industrial operations.
+      </h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+
+      <!-- Pillar 1 -->
+      <div class="pillar-card bg-white border border-fo-rule rounded-2xl p-8 reveal">
+        <div style="width:40px;height:40px;background:#FFF3EC;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+          <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
+            <rect x="2" y="4" width="16" height="2.5" rx="1.25" fill="#F05A00"/>
+            <rect x="2" y="8.75" width="11" height="2.5" rx="1.25" fill="#F05A00" opacity=".5"/>
+            <rect x="2" y="13.5" width="13" height="2.5" rx="1.25" fill="#F05A00" opacity=".3"/>
+          </svg>
+        </div>
+        <div class="font-mono text-[9px] tracking-[0.12em] uppercase text-fo-orange mb-3">01 — Data Foundation</div>
+        <h3 class="font-display font-700 text-xl text-fo-dark mb-4">One operational model</h3>
+        <p class="font-body text-sm text-fo-muted leading-relaxed">
+          Connect siloed systems — ERP, MES, WMS, spreadsheets — into a canonical operational model. Products, suppliers, inventory, orders, forecasts. Normalized and queryable in days, not months.
+        </p>
+        <div class="mt-6 pt-6 border-t border-fo-rule font-mono text-[10px] text-fo-faint">
+          CSV · XLSX · REST API · SAP · NetSuite · Kinaxis
+        </div>
+      </div>
+
+      <!-- Pillar 2 (featured) -->
+      <div class="pillar-card bg-white border-2 border-fo-orange rounded-2xl p-8 relative reveal reveal-delay-1">
+        <div style="position:absolute;top:-12px;left:24px;">
+          <span class="font-mono text-[9px] tracking-[0.1em] uppercase font-medium"
+                style="background:#F05A00;color:#fff;padding:3px 12px;border-radius:20px;">The unique part</span>
+        </div>
+        <div style="width:40px;height:40px;background:#FFF3EC;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+          <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
+            <path d="M3 3h6v6H3zM11 3h6v6h-6zM3 11h6v6H3zM11 11h6v6h-6z" stroke="#F05A00" stroke-width="1.5" fill="none" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="font-mono text-[9px] tracking-[0.12em] uppercase text-fo-orange mb-3">02 — Logic Repository</div>
+        <h3 class="font-display font-700 text-xl text-fo-dark mb-4">GitHub for operations</h3>
+        <p class="font-body text-sm text-fo-muted leading-relaxed">
+          Capture, govern, and evolve the rules that run the business. Hard constraints, thresholds, approval flows. Soft policies, tribal knowledge, exceptions with authority and justification.
+          Versioned. Auditable. Owned by the company — not trapped in anyone's head.
+        </p>
+        <div class="mt-6 pt-6 border-t border-fo-orange/20 flex gap-2 flex-wrap">
+          <span class="font-mono text-[10px] bg-fo-orange-pale text-fo-orange px-2.5 py-1 rounded-md">Versioned</span>
+          <span class="font-mono text-[10px] bg-fo-orange-pale text-fo-orange px-2.5 py-1 rounded-md">Auditable</span>
+          <span class="font-mono text-[10px] bg-fo-orange-pale text-fo-orange px-2.5 py-1 rounded-md">API-exposed</span>
+        </div>
+      </div>
+
+      <!-- Pillar 3 -->
+      <div class="pillar-card bg-white border border-fo-rule rounded-2xl p-8 reveal reveal-delay-2">
+        <div style="width:40px;height:40px;background:#FFF3EC;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+          <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
+            <circle cx="10" cy="10" r="7" stroke="#F05A00" stroke-width="1.5"/>
+            <path d="M7 10l2 2 4-4" stroke="#F05A00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="font-mono text-[9px] tracking-[0.12em] uppercase text-fo-orange mb-3">03 — Application Layer</div>
+        <h3 class="font-display font-700 text-xl text-fo-dark mb-4">AI that knows your operation</h3>
+        <p class="font-body text-sm text-fo-muted leading-relaxed">
+          Once Focus holds your operational state and logic, AI can actually work. Natural language questions grounded in real constraints. Impact analysis. Shortage detection. Procurement copilots. Agents that don't hallucinate plans.
+        </p>
+        <div class="mt-6 pt-6 border-t border-fo-rule grid grid-cols-2 gap-2">
+          <span class="font-body text-xs font-semibold text-fo-orange">Ask ↗</span>
+          <span class="font-body text-xs font-semibold text-fo-orange">Analyze ↗</span>
+          <span class="font-body text-xs font-semibold text-fo-orange">Build ↗</span>
+          <span class="font-body text-xs font-semibold text-fo-orange">Automate ↗</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ HOW IT WORKS ═══════════════════════════════ -->
+<section class="py-24 bg-white" id="how-it-works">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+
+    <div class="max-w-[620px] mb-16">
+      <div class="label-tag mb-5 reveal">How it works</div>
+      <h2 class="font-display font-700 text-fo-dark leading-tight mb-5 reveal reveal-delay-1"
+          style="font-size:clamp(1.9rem,3.2vw,2.8rem);">
+        How a question becomes a trusted answer.
+      </h2>
+      <p class="font-body text-fo-muted text-[1.0625rem] leading-relaxed reveal reveal-delay-2">
+        Deterministic where it must be — scope, retrieval, execution.
+        Intelligent where it helps — interpretation and synthesis.
+        Every answer cites which rules applied and which data rows were read.
+      </p>
+    </div>
+
+    <!-- 5-step flow -->
+    <div class="grid md:grid-cols-5 gap-3 mb-20 reveal">
+
+      <div class="relative p-5 rounded-xl border border-fo-rule">
+        <div class="w-9 h-9 rounded-full bg-fo-dark text-white font-display font-700 text-sm flex items-center justify-center mb-4">1</div>
+        <h4 class="font-display font-700 text-base text-fo-dark mb-2">User question</h4>
+        <p class="text-xs text-fo-muted font-body leading-relaxed">Natural language. About inventory, suppliers, exceptions, or root causes.</p>
+      </div>
+
+      <div class="relative p-5 rounded-xl border border-fo-rule">
+        <div class="w-9 h-9 rounded-full bg-fo-dark text-white font-display font-700 text-sm flex items-center justify-center mb-4">2</div>
+        <h4 class="font-display font-700 text-base text-fo-dark mb-2">Scope &amp; version</h4>
+        <p class="text-xs text-fo-faint font-body italic mb-1">Deterministic, before LLM.</p>
+        <p class="text-xs text-fo-muted font-body leading-relaxed">Parses entities, plants, time windows. Pins the active rule-set version at this moment.</p>
+      </div>
+
+      <!-- Step 3: highlighted -->
+      <div class="relative p-5 rounded-xl border-2 border-fo-orange" style="background:rgba(240,90,0,0.025);">
+        <div class="w-9 h-9 rounded-full bg-fo-orange text-white font-display font-700 text-sm flex items-center justify-center mb-4">3</div>
+        <h4 class="font-display font-700 text-base text-fo-dark mb-2">Parallel retrieval</h4>
+        <p class="text-xs text-fo-faint font-body italic mb-3">Both paths fire at once.</p>
+        <div class="space-y-1.5">
+          <div class="font-mono text-[10px] px-3 py-1.5 rounded" style="background:#E8F5F0;color:#1A7A5A;">Structured rules</div>
+          <div class="font-mono text-[10px] px-3 py-1.5 rounded bg-fo-orange-pale text-fo-orange">Markdown docs</div>
+        </div>
+      </div>
+
+      <div class="relative p-5 rounded-xl border border-fo-rule">
+        <div class="w-9 h-9 rounded-full bg-fo-dark text-white font-display font-700 text-sm flex items-center justify-center mb-4">4</div>
+        <h4 class="font-display font-700 text-base text-fo-dark mb-2">LLM + tool-calling</h4>
+        <p class="text-xs text-fo-faint font-body italic mb-1">Grounded execution.</p>
+        <p class="text-xs text-fo-muted font-body leading-relaxed">LLM reads context, picks tools. Tools execute typed queries on canonical data — not the LLM.</p>
+      </div>
+
+      <div class="relative p-5 rounded-xl border border-fo-rule">
+        <div class="w-9 h-9 rounded-full bg-fo-dark text-white font-display font-700 text-sm flex items-center justify-center mb-4">5</div>
+        <h4 class="font-display font-700 text-base text-fo-dark mb-2">Grounded answer</h4>
+        <p class="text-xs text-fo-faint font-body italic mb-1">Full citations attached.</p>
+        <p class="text-xs text-fo-muted font-body leading-relaxed">Tools called, rows used, rule versions, data freshness — all surfaced to the operator.</p>
+      </div>
+
+    </div>
+
+    <!-- Three trust pillars -->
+    <div class="border-t border-fo-rule pt-16 grid md:grid-cols-3 gap-12">
+
+      <div class="reveal">
+        <div class="flex items-center gap-3 mb-4">
+          <svg width="22" height="22" fill="none" viewBox="0 0 22 22">
+            <path d="M11 2L3 5.5v6c0 4.97 3.526 9.123 8 10 4.474-.877 8-5.03 8-10v-6L11 2z" stroke="#F05A00" stroke-width="1.5" fill="none"/>
+            <path d="M7.5 11l2.5 2.5 4.5-4.5" stroke="#F05A00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <h4 class="font-display font-700 text-xl text-fo-dark">Grounded by design</h4>
+        </div>
+        <p class="text-sm text-fo-muted font-body leading-relaxed">
+          The LLM never sees raw data until a tool returns it. It never enforces a structured rule — tools do that. Hallucination is structurally impossible for scoped, deterministic operations.
+        </p>
+      </div>
+
+      <div class="reveal reveal-delay-1">
+        <div class="flex items-center gap-3 mb-4">
+          <svg width="22" height="22" fill="none" viewBox="0 0 22 22">
+            <circle cx="11" cy="11" r="8" stroke="#F05A00" stroke-width="1.5"/>
+            <circle cx="11" cy="11" r="3" stroke="#F05A00" stroke-width="1.5"/>
+            <path d="M11 3v2M11 17v2M3 11h2M17 11h2" stroke="#F05A00" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <h4 class="font-display font-700 text-xl text-fo-dark">Scoped retrieval</h4>
+        </div>
+        <p class="text-sm text-fo-muted font-body leading-relaxed">
+          Only the dozen rules relevant to the question enter LLM context. Scales to 10,000+ rules per customer without degrading answer quality. The system gets smarter as you add rules — not noisier.
+        </p>
+      </div>
+
+      <div class="reveal reveal-delay-2">
+        <div class="flex items-center gap-3 mb-4">
+          <svg width="22" height="22" fill="none" viewBox="0 0 22 22">
+            <path d="M4 7h14M4 11h10M4 15h6" stroke="#F05A00" stroke-width="1.5" stroke-linecap="round"/>
+            <rect x="2" y="3" width="18" height="16" rx="3" stroke="#F05A00" stroke-width="1.5"/>
+          </svg>
+          <h4 class="font-display font-700 text-xl text-fo-dark">Version-pinned</h4>
+        </div>
+        <p class="text-sm text-fo-muted font-body leading-relaxed">
+          Same question + same data + same rule version = same answer, reproducible months later. Every response is auditable: which rule version applied, which data rows were read, when.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ WHO BUYS ═══════════════════════════════ -->
+<section class="py-24 bg-fo-bg" id="who">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="grid md:grid-cols-2 gap-16 items-start">
+
+      <!-- Left -->
+      <div>
+        <div class="label-tag mb-5 reveal">Who it's for</div>
+        <h2 class="font-display font-700 text-fo-dark leading-tight mb-6 reveal reveal-delay-1"
+            style="font-size:clamp(1.9rem,3.2vw,2.8rem);">
+          Land fast with Planners.<br>Expand from there.
+        </h2>
+        <p class="font-body text-fo-muted text-[1.0625rem] leading-relaxed mb-8 reveal reveal-delay-2">
+          Mid-market industrial manufacturers. 200–1,000 employees. Discrete manufacturing, process manufacturing, industrial equipment. 50M–500M in revenue.
+        </p>
+
+        <div class="space-y-3 reveal reveal-delay-3">
+          <div class="flex items-start gap-4 p-5 bg-white border border-fo-rule rounded-xl">
+            <div class="font-mono text-[9px] tracking-[0.12em] uppercase text-fo-orange mt-0.5 min-w-[68px]">User</div>
+            <div>
+              <div class="font-semibold text-sm font-body text-fo-ink mb-0.5">Supply &amp; material planners</div>
+              <div class="text-xs text-fo-faint font-body">The people who feel the pain every morning when the plan breaks</div>
+            </div>
+          </div>
+          <div class="flex items-start gap-4 p-5 bg-white border border-fo-rule rounded-xl">
+            <div class="font-mono text-[9px] tracking-[0.12em] uppercase text-fo-orange mt-0.5 min-w-[68px]">Champion</div>
+            <div>
+              <div class="font-semibold text-sm font-body text-fo-ink mb-0.5">Head of Operations / Supply Chain</div>
+              <div class="text-xs text-fo-faint font-body">Owns the outcome, drives the initiative internally</div>
+            </div>
+          </div>
+          <div class="flex items-start gap-4 p-5 bg-white border border-fo-rule rounded-xl">
+            <div class="font-mono text-[9px] tracking-[0.12em] uppercase text-fo-orange mt-0.5 min-w-[68px]">Buyer</div>
+            <div>
+              <div class="font-semibold text-sm font-body text-fo-ink mb-0.5">VP Operations / COO</div>
+              <div class="text-xs text-fo-faint font-body">Signs off. Cares about ROI and time to value.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: How you start -->
+      <div class="bg-white border border-fo-rule rounded-2xl p-8 reveal reveal-delay-1">
+        <h3 class="font-display font-700 text-xl text-fo-dark mb-8">How you start</h3>
+        <div class="space-y-8">
+          <div class="flex gap-5">
+            <div class="w-8 h-8 rounded-full border border-fo-orange/30 bg-fo-orange-pale flex items-center justify-center flex-shrink-0">
+              <span class="font-display font-700 text-fo-orange text-sm">1</span>
+            </div>
+            <div>
+              <div class="font-semibold text-sm font-body text-fo-ink mb-1">Connect 1–2 operational systems</div>
+              <div class="text-xs text-fo-faint font-body leading-relaxed">Or just upload a CSV/XL. No IT project required. Start with what you have — we've seen full value from a single spreadsheet.</div>
+            </div>
+          </div>
+          <div class="flex gap-5">
+            <div class="w-8 h-8 rounded-full border border-fo-orange/30 bg-fo-orange-pale flex items-center justify-center flex-shrink-0">
+              <span class="font-display font-700 text-fo-orange text-sm">2</span>
+            </div>
+            <div>
+              <div class="font-semibold text-sm font-body text-fo-ink mb-1">Capture your first rules</div>
+              <div class="text-xs text-fo-faint font-body leading-relaxed">Write them in plain language. Focus structures them automatically. No configuration, no consultants, no six-month implementation.</div>
+            </div>
+          </div>
+          <div class="flex gap-5">
+            <div class="w-8 h-8 rounded-full border border-fo-orange/30 bg-fo-orange-pale flex items-center justify-center flex-shrink-0">
+              <span class="font-display font-700 text-fo-orange text-sm">3</span>
+            </div>
+            <div>
+              <div class="font-semibold text-sm font-body text-fo-ink mb-1">Start asking and analyzing</div>
+              <div class="text-xs text-fo-faint font-body leading-relaxed">Natural language queries across your data. Impact analysis grounded in your actual constraints — not generic AI answers.</div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-8 pt-6 border-t border-fo-rule flex items-center gap-2">
+          <div class="w-1.5 h-1.5 rounded-full bg-fo-orange"></div>
+          <span class="font-body text-sm font-semibold text-fo-orange">Time to first value: weeks, not months</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ TRACTION ═══════════════════════════════ -->
+<section class="py-24 bg-white" id="traction">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+
+    <div class="grid md:grid-cols-2 gap-16 items-start mb-20">
+      <div>
+        <div class="label-tag mb-5 reveal">Traction</div>
+        <h2 class="font-display font-700 text-fo-dark leading-tight reveal reveal-delay-1"
+            style="font-size:clamp(1.9rem,3.2vw,2.8rem);">
+          Strong validation and an active pipeline.
+        </h2>
+      </div>
+      <div class="space-y-7 pt-1 reveal reveal-delay-1">
+        <div class="flex gap-5">
+          <div class="flex-shrink-0 mt-0.5">
+            <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
+              <path d="M3 10l5 5 9-9" stroke="#F05A00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <div class="font-semibold font-body text-fo-ink mb-1"><span class="text-fo-orange">70+ conversations</span> validated the core problem</div>
+            <div class="text-sm text-fo-muted font-body leading-relaxed">The rules and operational logic that run industrial companies don't live in any system, and AI tools can't operate without them.</div>
+          </div>
+        </div>
+        <div class="flex gap-5">
+          <div class="flex-shrink-0 mt-0.5">
+            <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
+              <path d="M3 10l5 5 9-9" stroke="#F05A00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <div class="font-semibold font-body text-fo-ink mb-1">Strong design-partner pipeline, <span class="text-fo-orange">4 advanced leads</span></div>
+            <div class="text-sm text-fo-muted font-body">Across electronics, medical devices, and F&amp;B manufacturing.</div>
+          </div>
+        </div>
+        <div class="flex gap-5">
+          <div class="flex-shrink-0 mt-0.5">
+            <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
+              <path d="M3 10l5 5 9-9" stroke="#F05A00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <div class="font-semibold font-body text-fo-ink mb-1"><span class="text-fo-orange">First design partner secured</span></div>
+            <div class="text-sm text-fo-muted font-body">F&amp;B manufacturer, France. Onboarding in progress.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logo wall -->
+    <div class="reveal">
+      <div class="font-mono text-[9px] tracking-[0.14em] uppercase text-fo-faint mb-8">
+        Leaders we've spoken with — not yet customers
+      </div>
+      <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-x-8 gap-y-5">
+        <div class="logo-name">Teva</div>
+        <div class="logo-name">Magenta Medical</div>
+        <div class="logo-name">LiveU</div>
+        <div class="logo-name">Mego Afek</div>
+        <div class="logo-name">Kornit</div>
+        <div class="logo-name">Amiad</div>
+        <div class="logo-name">Phibro</div>
+        <div class="logo-name">IVORYGraft</div>
+        <div class="logo-name">Boehringer Ingelheim</div>
+        <div class="logo-name">Lilly</div>
+        <div class="logo-name">Elbatech</div>
+        <div class="logo-name">imco</div>
+        <div class="logo-name">Carmit</div>
+        <div class="logo-name">SHL</div>
+        <div class="logo-name">RH Group</div>
+        <div class="logo-name">Align</div>
+        <div class="logo-name">Mandar</div>
+        <div class="logo-name">Tempo</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ BOOK A CALL ═══════════════════════════════ -->
+<section class="py-24" id="book"
+         style="background: radial-gradient(ellipse 80% 100% at 0% 100%, rgba(240,90,0,0.05) 0%, transparent 60%), #F9F9F7;">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="grid md:grid-cols-2 gap-16 items-start">
+
+      <!-- Left: Copy -->
+      <div>
+        <div class="label-tag mb-5 reveal">Book a pilot call</div>
+        <h2 class="font-display font-700 text-fo-dark leading-tight mb-5 reveal reveal-delay-1"
+            style="font-size:clamp(2rem,3.5vw,3.25rem);">
+          15 minutes.<br>
+          We'll show you the product<br>
+          on your data.
+        </h2>
+        <p class="font-body text-fo-muted text-[1.0625rem] leading-relaxed mb-8 reveal reveal-delay-2">
+          Not a generic demo. We'll connect Focus to your actual operational systems — or you bring a spreadsheet — and walk through the logic layer on your real constraints. If it doesn't fit your problem, we'll tell you.
+        </p>
+
+      
+      </div>
+
+      <!-- Right: Form -->
+      <div class="bg-white border border-fo-rule rounded-2xl p-8 reveal reveal-delay-1">
+        <h3 class="font-display font-700 text-xl text-fo-dark mb-7">Request a pilot call</h3>
+
+        <form id="contact-form" class="space-y-5">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="form-label">Name *</label>
+              <input type="text" name="name" required placeholder="Sarah Chen" class="form-input">
+            </div>
+            <div>
+              <label class="form-label">Company *</label>
+              <input type="text" name="company" required placeholder="Acme Manufacturing" class="form-input">
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label">Role *</label>
+            <div class="select-wrap">
+              <select name="role" required class="form-input">
+                <option value="" disabled selected>Select your role</option>
+                <option>VP Operations / COO</option>
+                <option>Head of Supply Chain</option>
+                <option>Supply / Material Planner</option>
+                <option>Plant Manager</option>
+                <option>Operations Manager</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="form-label">Work email *</label>
+              <input type="email" name="email" required placeholder="sarah@acme.com" class="form-input">
+            </div>
+            <div>
+              <label class="form-label">Phone</label>
+              <input type="tel" name="phone" placeholder="+1 555 000 0000" class="form-input">
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label">Ops team headcount</label>
+            <div class="select-wrap">
+              <select name="headcount" class="form-input">
+                <option value="" disabled selected>Select range</option>
+                <option>1–10 planners / buyers</option>
+                <option>10–40 planners / buyers</option>
+                <option>40–100 planners / buyers</option>
+                <option>100+ planners / buyers</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary w-full py-4 rounded-xl text-[0.9375rem] text-center">
+            Request a pilot call →
+          </button>
+
+          <p class="text-xs text-fo-faint text-center font-body">
+            We'll respond within one business day. No spam, no SDR sequences.
+          </p>
+        </form>
+
+        <div id="form-success" class="hidden text-center py-10">
+          <div class="w-14 h-14 rounded-full bg-fo-orange-pale flex items-center justify-center mx-auto mb-5">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path d="M5 12l5 5L20 7" stroke="#F05A00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h4 class="font-display font-700 text-2xl text-fo-dark mb-2">Sent. Talk soon.</h4>
+          <p class="text-sm text-fo-muted font-body max-w-xs mx-auto">We'll reach out within one business day to schedule your 15-minute call.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ FOOTER ═══════════════════════════════ -->
+<footer class="py-8 border-t border-fo-rule">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+
+    <div class="flex items-center gap-2.5">
+      <svg width="20" height="20" viewBox="0 0 26 26" fill="none">
+        <circle cx="13" cy="13" r="11.5" stroke="#F05A00" stroke-width="2"/>
+        <circle cx="13" cy="13" r="5.5" fill="#F05A00"/>
+        <circle cx="13" cy="13" r="2.2" fill="#0C0C0C"/>
+      </svg>
+      <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1rem;letter-spacing:0.04em;color:#0C0C0C;">FOCUS<span style="color:#F05A00;">.</span></span>
+    </div>
+
+    <p class="text-xs text-fo-faint font-body">© 2026 Focus. All rights reserved.</p>
+
+    <div class="flex items-center gap-6">
+      <a href="mailto:nir@focusnow.io" class="text-xs text-fo-faint hover:text-fo-ink font-body transition-colors">nir@focusnow.io</a>
+      <a href="https://www.linkedin.com/company/focusnow" target="_blank" rel="noopener" class="text-xs text-fo-faint hover:text-fo-ink font-body transition-colors">LinkedIn</a>
+    </div>
+  </div>
+</footer>
+
+
+<script>
+  // Nav shadow on scroll
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 20);
+  }, { passive: true });
+
+  // Reveal on scroll
+  const revealEls = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  revealEls.forEach(el => observer.observe(el));
+
+  // Form: compose mailto with all fields
+  document.getElementById('contact-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const f = e.target;
+    const vals = {
+      name:      f.name.value.trim(),
+      company:   f.company.value.trim(),
+      role:      f.role.value,
+      email:     f.email.value.trim(),
+      phone:     f.phone.value.trim() || 'Not provided',
+      headcount: f.headcount.value || 'Not specified',
+    };
+
+    const subject = encodeURIComponent(`Focus Pilot Call — ${vals.company}`);
+    const body = encodeURIComponent(
+      `New pilot call request from focusnow.io\n\n` +
+      `Name: ${vals.name}\n` +
+      `Company: ${vals.company}\n` +
+      `Role: ${vals.role}\n` +
+      `Email: ${vals.email}\n` +
+      `Phone: ${vals.phone}\n` +
+      `Ops Headcount: ${vals.headcount}`
+    );
+
+    window.location.href = `mailto:shahar@focusnow.io,nir@focusnow.io?subject=${subject}&body=${body}`;
+
+    // Show success state
+    f.style.display = 'none';
+    document.getElementById('form-success').classList.remove('hidden');
+  });
+</script>
+
+</body>
+</html>
