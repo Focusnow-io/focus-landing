@@ -106,7 +106,7 @@
     }
 
     /* --- Quote pull --- */
-    .quote-card { border-top: 2px solid #2A2A2A; }
+    .quote-card { border-top: 2px solid #2A2A2A; display: flex; flex-direction: column; }
 
     /* --- Form inputs --- */
     .form-input {
@@ -177,10 +177,10 @@
 <nav id="nav" class="fixed top-0 left-0 right-0 z-50 bg-white/96 backdrop-blur-sm">
   <div class="max-w-7xl mx-auto px-6 lg:px-10 h-[60px] flex items-center justify-between">
     <a href="#" class="flex items-center gap-2.5 no-underline">
-      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-        <circle cx="13" cy="13" r="11.5" stroke="#F05A00" stroke-width="2.5"/>
-        <circle cx="13" cy="13" r="5.5" fill="#F05A00"/>
-        <circle cx="13" cy="13" r="2.2" fill="#0C0C0C"/>
+      <svg width="28" height="28" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M250 30 C120 30 30 130 30 250 C30 370 120 470 250 470 C380 470 470 370 470 250 C470 190 445 140 410 105 L350 170 C370 195 385 225 385 250 C385 330 330 385 250 385 C170 385 115 330 115 250 C115 170 170 115 250 115 C270 115 290 120 305 130 L355 65 C325 45 290 30 250 30Z" fill="#F04A00"/>
+        <circle cx="250" cy="250" r="75" fill="#000000"/>
+        <path d="M310 170 C340 195 355 225 355 260 L470 250 C470 190 445 140 410 105 Z" fill="#F04A00"/>
       </svg>
       <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.25rem;letter-spacing:0.02em;color:#0C0C0C;">FOCUS<span style="color:#F05A00;">.</span></span>
     </a>
@@ -199,19 +199,19 @@
 
       <!-- Copy -->
       <div class="max-w-[600px]">
-        <div class="label-tag mb-7 reveal">Context Infrastructure for Industrial Operations</div>
+        <div class="label-tag mb-7 reveal">For industrial operations teams</div>
 
         <h1 class="reveal reveal-delay-1 font-display font-800 text-fo-dark leading-[0.96] mb-7"
             style="font-size:clamp(2.8rem,5.5vw,5rem);letter-spacing:-0.01em;">
-          The operational logic layer<br>
-          <span style="color:#F05A00;">industrial AI</span><br>
-          has been missing.
+          The rules running<br>
+          your operation<br>
+          <span style="color:#F05A00;">live nowhere.</span>
         </h1>
 
         <p class="reveal reveal-delay-2 font-body text-[1.0625rem] text-fo-muted leading-relaxed mb-10 max-w-[480px]">
-          AI fails in operations for the same reason operations have bled cash for decades —
-          the rules, constraints, and context that actually run the business live nowhere.
-          Focus is the missing layer between your ERP and your AI.
+          Every day your planners override the plan because the system doesn't reflect reality.
+          Every AI pilot stalls because it can't see your real constraints.
+          Focus captures the operational logic that runs your business — and makes it available to every system that needs it.
         </p>
 
         <div class="reveal reveal-delay-3 flex flex-wrap items-center gap-5 mb-12">
@@ -286,7 +286,7 @@
       <div class="label-tag mb-5" style="color:#F05A00;">If you've said any of this out loud this month, keep reading.</div>
       <h2 class="font-display font-700 text-white leading-tight"
           style="font-size:clamp(1.9rem,3.2vw,2.8rem);max-width:640px;">
-        The plan breaks daily. The system doesn't reflect reality. And AI makes it worse.
+        Your planners know things your systems don't. That gap is costing you.
       </h2>
     </div>
 
@@ -296,7 +296,7 @@
         <blockquote class="font-body text-[1.0625rem] text-white leading-relaxed italic mb-6">
           "The plan breaks daily, sometimes hourly. We constantly override the system because reality is different."
         </blockquote>
-        <cite class="not-italic">
+        <cite class="not-italic mt-auto">
           <div class="font-semibold text-fo-orange text-sm font-body">VP Operations</div>
           <div class="text-[#555] text-sm font-body">Electronics manufacturer</div>
         </cite>
@@ -305,7 +305,7 @@
         <blockquote class="font-body text-[1.0625rem] text-white leading-relaxed italic mb-6">
           "Seeing the impact of a single extra order takes weeks. The system doesn't reflect the real constraints."
         </blockquote>
-        <cite class="not-italic">
+        <cite class="not-italic mt-auto">
           <div class="font-semibold text-fo-orange text-sm font-body">Supply Chain Manager</div>
           <div class="text-[#555] text-sm font-body">Medical device manufacturer</div>
         </cite>
@@ -314,7 +314,7 @@
         <blockquote class="font-body text-[1.0625rem] text-white leading-relaxed italic mb-6">
           "No system we used truly captures the constraints we operate under."
         </blockquote>
-        <cite class="not-italic">
+        <cite class="not-italic mt-auto">
           <div class="font-semibold text-fo-orange text-sm font-body">VP Operations</div>
           <div class="text-[#555] text-sm font-body">F&amp;B manufacturer</div>
         </cite>
@@ -351,13 +351,13 @@
   <div class="max-w-7xl mx-auto px-6 lg:px-10">
 
     <div class="max-w-[600px] mb-16">
-      <div class="label-tag mb-5 reveal">Why it matters</div>
+      <div class="label-tag mb-5 reveal">The gap in your stack</div>
       <h2 class="font-display font-700 text-fo-dark leading-tight mb-5 reveal reveal-delay-1"
           style="font-size:clamp(1.9rem,3.2vw,2.8rem);">
-        The operational logic has no home in the modern industrial stack.
+        Your AI has no idea why you do what you do.
       </h2>
       <p class="font-body text-fo-muted text-[1.0625rem] leading-relaxed reveal reveal-delay-2">
-        Your AI tools sit on top. Your ERP sits at the bottom. In between — the rules, constraints, and policies that actually govern decisions — there's nothing. That gap is why AI pilots fail to scale.
+        The planning tools sit on top. The ERP sits at the bottom. In the middle — the supplier exceptions, approval thresholds, reorder logic, and tribal knowledge that actually govern decisions — nothing. That's the layer your AI is missing, and the reason pilots don't scale.
       </p>
     </div>
 
@@ -422,10 +422,10 @@
   <div class="max-w-7xl mx-auto px-6 lg:px-10">
 
     <div class="max-w-[600px] mb-16">
-      <div class="label-tag mb-5 reveal">The Solution</div>
+      <div class="label-tag mb-5 reveal">What Focus does</div>
       <h2 class="font-display font-700 text-fo-dark leading-tight reveal reveal-delay-1"
           style="font-size:clamp(1.9rem,3.2vw,2.8rem);">
-        We build the logic repository that powers AI in industrial operations.
+        One system that finally reflects how your operation actually runs.
       </h2>
     </div>
 
@@ -440,10 +440,10 @@
             <rect x="2" y="13.5" width="13" height="2.5" rx="1.25" fill="#F05A00" opacity=".3"/>
           </svg>
         </div>
-        <div class="font-mono text-[9px] tracking-[0.12em] uppercase text-fo-orange mb-3">01 — Data Foundation</div>
-        <h3 class="font-display font-700 text-xl text-fo-dark mb-4">One operational model</h3>
+        <div class="font-mono text-[9px] tracking-[0.12em] uppercase text-fo-orange mb-3">01 — Your data, unified</div>
+        <h3 class="font-display font-700 text-xl text-fo-dark mb-4">Everything in one place</h3>
         <p class="font-body text-sm text-fo-muted leading-relaxed">
-          Connect siloed systems — ERP, MES, WMS, spreadsheets — into a canonical operational model. Products, suppliers, inventory, orders, forecasts. Normalized and queryable in days, not months.
+          Your ERP, MES, WMS, and spreadsheets — all talking to each other. Products, suppliers, inventory, orders, forecasts in a single model your team can query. Set up in days, not months.
         </p>
         <div class="mt-6 pt-6 border-t border-fo-rule font-mono text-[10px] text-fo-faint">
           CSV · XLSX · REST API · SAP · NetSuite · Kinaxis
@@ -461,11 +461,10 @@
             <path d="M3 3h6v6H3zM11 3h6v6h-6zM3 11h6v6H3zM11 11h6v6h-6z" stroke="#F05A00" stroke-width="1.5" fill="none" stroke-linejoin="round"/>
           </svg>
         </div>
-        <div class="font-mono text-[9px] tracking-[0.12em] uppercase text-fo-orange mb-3">02 — Logic Repository</div>
-        <h3 class="font-display font-700 text-xl text-fo-dark mb-4">GitHub for operations</h3>
+        <div class="font-mono text-[9px] tracking-[0.12em] uppercase text-fo-orange mb-3">02 — Your rules, captured</div>
+        <h3 class="font-display font-700 text-xl text-fo-dark mb-4">Stop losing knowledge when people leave</h3>
         <p class="font-body text-sm text-fo-muted leading-relaxed">
-          Capture, govern, and evolve the rules that run the business. Hard constraints, thresholds, approval flows. Soft policies, tribal knowledge, exceptions with authority and justification.
-          Versioned. Auditable. Owned by the company — not trapped in anyone's head.
+          Write your reorder logic, supplier exceptions, approval thresholds, and workarounds in plain language. Focus structures them, versions them, and makes them available to every system — including your AI. The way you actually operate, finally in a system.
         </p>
         <div class="mt-6 pt-6 border-t border-fo-orange/20 flex gap-2 flex-wrap">
           <span class="font-mono text-[10px] bg-fo-orange-pale text-fo-orange px-2.5 py-1 rounded-md">Versioned</span>
@@ -482,10 +481,10 @@
             <path d="M7 10l2 2 4-4" stroke="#F05A00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
-        <div class="font-mono text-[9px] tracking-[0.12em] uppercase text-fo-orange mb-3">03 — Application Layer</div>
-        <h3 class="font-display font-700 text-xl text-fo-dark mb-4">AI that knows your operation</h3>
+        <div class="font-mono text-[9px] tracking-[0.12em] uppercase text-fo-orange mb-3">03 — AI with real constraints</div>
+        <h3 class="font-display font-700 text-xl text-fo-dark mb-4">Ask questions your ERP can't answer</h3>
         <p class="font-body text-sm text-fo-muted leading-relaxed">
-          Once Focus holds your operational state and logic, AI can actually work. Natural language questions grounded in real constraints. Impact analysis. Shortage detection. Procurement copilots. Agents that don't hallucinate plans.
+          "Which orders are at risk if supplier X delays by a week?" "What's the cost of moving up this production run?" Focus knows your rules, your data, and your constraints — so AI can give you a real answer, not a generic one.
         </p>
         <div class="mt-6 pt-6 border-t border-fo-rule grid grid-cols-2 gap-2">
           <span class="font-body text-xs font-semibold text-fo-orange">Ask ↗</span>
@@ -505,15 +504,13 @@
   <div class="max-w-7xl mx-auto px-6 lg:px-10">
 
     <div class="max-w-[620px] mb-16">
-      <div class="label-tag mb-5 reveal">How it works</div>
+      <div class="label-tag mb-5 reveal">Under the hood</div>
       <h2 class="font-display font-700 text-fo-dark leading-tight mb-5 reveal reveal-delay-1"
           style="font-size:clamp(1.9rem,3.2vw,2.8rem);">
-        How a question becomes a trusted answer.
+        Built for ops teams who've been burned by AI before.
       </h2>
       <p class="font-body text-fo-muted text-[1.0625rem] leading-relaxed reveal reveal-delay-2">
-        Deterministic where it must be — scope, retrieval, execution.
-        Intelligent where it helps — interpretation and synthesis.
-        Every answer cites which rules applied and which data rows were read.
+        Grounded by design — your AI never guesses. Every answer cites the exact rule version and data rows it used. Your CTO will want to read this section too.
       </p>
     </div>
 
@@ -522,15 +519,15 @@
 
       <div class="relative p-5 rounded-xl border border-fo-rule">
         <div class="w-9 h-9 rounded-full bg-fo-dark text-white font-display font-700 text-sm flex items-center justify-center mb-4">1</div>
-        <h4 class="font-display font-700 text-base text-fo-dark mb-2">User question</h4>
-        <p class="text-xs text-fo-muted font-body leading-relaxed">Natural language. About inventory, suppliers, exceptions, or root causes.</p>
+        <h4 class="font-display font-700 text-base text-fo-dark mb-2">You ask</h4>
+        <p class="text-xs text-fo-muted font-body leading-relaxed">In plain language. "Which orders are at risk?" "What happens if we pull this forward?"</p>
       </div>
 
       <div class="relative p-5 rounded-xl border border-fo-rule">
         <div class="w-9 h-9 rounded-full bg-fo-dark text-white font-display font-700 text-sm flex items-center justify-center mb-4">2</div>
-        <h4 class="font-display font-700 text-base text-fo-dark mb-2">Scope &amp; version</h4>
-        <p class="text-xs text-fo-faint font-body italic mb-1">Deterministic, before LLM.</p>
-        <p class="text-xs text-fo-muted font-body leading-relaxed">Parses entities, plants, time windows. Pins the active rule-set version at this moment.</p>
+        <h4 class="font-display font-700 text-base text-fo-dark mb-2">Context locked</h4>
+        <p class="text-xs text-fo-faint font-body italic mb-1">Deterministic, before AI.</p>
+        <p class="text-xs text-fo-muted font-body leading-relaxed">Scope is resolved — plant, SKU, time window. The exact rule version active right now is pinned.</p>
       </div>
 
       <!-- Step 3: highlighted -->
@@ -553,9 +550,9 @@
 
       <div class="relative p-5 rounded-xl border border-fo-rule">
         <div class="w-9 h-9 rounded-full bg-fo-dark text-white font-display font-700 text-sm flex items-center justify-center mb-4">5</div>
-        <h4 class="font-display font-700 text-base text-fo-dark mb-2">Grounded answer</h4>
-        <p class="text-xs text-fo-faint font-body italic mb-1">Full citations attached.</p>
-        <p class="text-xs text-fo-muted font-body leading-relaxed">Tools called, rows used, rule versions, data freshness — all surfaced to the operator.</p>
+        <h4 class="font-display font-700 text-base text-fo-dark mb-2">A real answer</h4>
+        <p class="text-xs text-fo-faint font-body italic mb-1">Fully cited.</p>
+        <p class="text-xs text-fo-muted font-body leading-relaxed">Which rule applied, which rows were read, how fresh the data was. You can audit it, not just trust it.</p>
       </div>
 
     </div>
@@ -618,10 +615,10 @@
         <div class="label-tag mb-5 reveal">Who it's for</div>
         <h2 class="font-display font-700 text-fo-dark leading-tight mb-6 reveal reveal-delay-1"
             style="font-size:clamp(1.9rem,3.2vw,2.8rem);">
-          Land fast with Planners.<br>Expand from there.
+          Built for ops teams running complex manufacturing.
         </h2>
         <p class="font-body text-fo-muted text-[1.0625rem] leading-relaxed mb-8 reveal reveal-delay-2">
-          Mid-market industrial manufacturers. 200–1,000 employees. Discrete manufacturing, process manufacturing, industrial equipment. 50M–500M in revenue.
+          If your team overrides the planning system daily, loses knowledge when people leave, and has tried AI that couldn't understand your real constraints — this was built for you.
         </p>
 
         <div class="space-y-3 reveal reveal-delay-3">
@@ -698,10 +695,10 @@
 
     <div class="grid md:grid-cols-2 gap-16 items-start mb-20">
       <div>
-        <div class="label-tag mb-5 reveal">Traction</div>
+        <div class="label-tag mb-5 reveal">Where we are</div>
         <h2 class="font-display font-700 text-fo-dark leading-tight reveal reveal-delay-1"
             style="font-size:clamp(1.9rem,3.2vw,2.8rem);">
-          Strong validation and an active pipeline.
+          We've talked to 70+ ops leaders. The problem is real.
         </h2>
       </div>
       <div class="space-y-7 pt-1 reveal reveal-delay-1">
@@ -879,10 +876,10 @@
   <div class="max-w-7xl mx-auto px-6 lg:px-10 flex flex-col sm:flex-row items-center justify-between gap-4">
 
     <div class="flex items-center gap-2.5">
-      <svg width="20" height="20" viewBox="0 0 26 26" fill="none">
-        <circle cx="13" cy="13" r="11.5" stroke="#F05A00" stroke-width="2"/>
-        <circle cx="13" cy="13" r="5.5" fill="#F05A00"/>
-        <circle cx="13" cy="13" r="2.2" fill="#0C0C0C"/>
+      <svg width="22" height="22" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M250 30 C120 30 30 130 30 250 C30 370 120 470 250 470 C380 470 470 370 470 250 C470 190 445 140 410 105 L350 170 C370 195 385 225 385 250 C385 330 330 385 250 385 C170 385 115 330 115 250 C115 170 170 115 250 115 C270 115 290 120 305 130 L355 65 C325 45 290 30 250 30Z" fill="#F04A00"/>
+        <circle cx="250" cy="250" r="75" fill="#000000"/>
+        <path d="M310 170 C340 195 355 225 355 260 L470 250 C470 190 445 140 410 105 Z" fill="#F04A00"/>
       </svg>
       <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1rem;letter-spacing:0.04em;color:#0C0C0C;">FOCUS<span style="color:#F05A00;">.</span></span>
     </div>
