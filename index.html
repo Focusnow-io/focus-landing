@@ -910,34 +910,39 @@
   revealEls.forEach(el => observer.observe(el));
 
   // Form: compose mailto with all fields
-  document.getElementById('contact-form').addEventListener('submit', function(e) {
+  document.getElementById('contact-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     const f = e.target;
-    const vals = {
+    const btn = f.querySelector('button[type="submit"]');
+
+    btn.textContent = 'Sending…';
+    btn.disabled = true;
+
+    const data = {
       name:      f.name.value.trim(),
       company:   f.company.value.trim(),
       role:      f.role.value,
       email:     f.email.value.trim(),
-      phone:     f.phone.value.trim() || 'Not provided',
-      headcount: f.headcount.value || 'Not specified',
+      phone:     f.phone.value.trim(),
+      headcount: f.headcount.value,
     };
 
-    const subject = encodeURIComponent(`Focus Pilot Call — ${vals.company}`);
-    const body = encodeURIComponent(
-      `New pilot call request from focusnow.io\n\n` +
-      `Name: ${vals.name}\n` +
-      `Company: ${vals.company}\n` +
-      `Role: ${vals.role}\n` +
-      `Email: ${vals.email}\n` +
-      `Phone: ${vals.phone}\n` +
-      `Ops Headcount: ${vals.headcount}`
-    );
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
 
-    window.location.href = `mailto:shahar@focusnow.io,nir@focusnow.io?subject=${subject}&body=${body}`;
+      if (!res.ok) throw new Error('send failed');
 
-    // Show success state
-    f.style.display = 'none';
-    document.getElementById('form-success').classList.remove('hidden');
+      f.style.display = 'none';
+      document.getElementById('form-success').classList.remove('hidden');
+    } catch {
+      btn.textContent = 'Request a pilot call →';
+      btn.disabled = false;
+      alert('Something went wrong. Email us directly at nir@focusnow.io');
+    }
   });
 </script>
 
