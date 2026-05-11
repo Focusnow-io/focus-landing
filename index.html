@@ -853,6 +853,10 @@
           <p class="text-xs text-fo-faint text-center font-body">
             We'll respond within one business day. No spam, no SDR sequences.
           </p>
+
+          <div id="form-error" class="hidden mt-4 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700 font-body text-center">
+            Something went wrong. Please try again.
+          </div>
         </form>
 
         <div id="form-success" class="hidden text-center py-10">
@@ -941,7 +945,7 @@
     } catch {
       btn.textContent = 'Request a pilot call →';
       btn.disabled = false;
-      alert('Something went wrong. Email us directly at nir@focusnow.io');
+      document.getElementById('form-error').classList.remove('hidden');
     }
   });
 </script>

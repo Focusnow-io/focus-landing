@@ -74,7 +74,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         from: 'Focus <demo@focusnow.io>',
         to: ['shahar@focusnow.io', 'nir@focusnow.io'],
-        reply_to: email,
+        reply_to: `${name} <${email}>`,
         subject: `Pilot call request — ${company}`,
         html,
       }),
